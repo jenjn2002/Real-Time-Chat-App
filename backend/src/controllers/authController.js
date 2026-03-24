@@ -31,7 +31,7 @@ export const signUp = async (req, res) => {
             username,
             hashedPassword,
             email,
-            displayName: '${firstName} ${lastName}'
+            displayName: `${firstName} ${lastName}`
         });
         
         // return
@@ -93,11 +93,31 @@ export const signIn = async (req, res) => {
             maxAge: REFRESH_TOKEN_TTL,
         })
         // tra access token ve trong res
-        return res.status(200).json({message: 'User ${user.displayName} da login', accessToken});
+        return res.status(200).json({message: `User ${user.displayName} da login`, accessToken});
 
 
     } catch (error) {
         console.error('loi khi goi signIn', error);
         return res.status(500).json({message: 'loi he thong'});
+    }
+};
+
+export const signOut = async (req, res) => {
+    try {
+        // lay refresh token tu cookie
+        const token = req.token?.refreshToken;
+
+        if(token){
+            // xoa refresh token trong session
+            await Session.deleteOne({refreshToken: token});
+
+            // xoa cookie
+            res.clearCookie("refreshToken");
+        }
+
+        return res.sendStatus(204);
+    } catch (error) {
+        console.error("loi khi goi sign out", error);
+        return res.status(500).json({message: "loi he thong"});
     }
 };
